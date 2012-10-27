@@ -1,6 +1,6 @@
-## This forks aims to make MPTT work with Kohana 3.2
+## This forks aims to make MPTT work with Kohana 3.3
 
-So far we've only fixed things, so usage is the same than before
+So far we've only fixed filename for PSR-0, so usage is the same than before
 
 ## MPTT Library, extends ORM
 
