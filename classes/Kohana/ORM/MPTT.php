@@ -502,9 +502,12 @@ class Kohana_ORM_MPTT extends ORM {
 			$level_offset = $target->level() - $this->level() + $level_offset;
 			$size = $this->size();
 
-			$this->create_space($left_offset, $size);
+			$this->create_space($left_offset, $size, $target->scope);
 
-			$this->reload();
+			if ($target->scope == $this->scope)
+      {
+        $this->reload();
+      }
 
 			$offset = ($left_offset - $this->left());
 			
@@ -517,7 +520,10 @@ class Kohana_ORM_MPTT extends ORM {
 				. $this->right_column.'` <= '.$this->right().' AND `'
 				. $this->scope_column.'` = '.$this->scope(), TRUE);
 			
-			$this->delete_space($this->left(), $size);
+			if ($target->scope == $this->scope)
+      {
+  			$this->delete_space($this->left(), $size, $target->scope);
+      }
 		}
 		catch (Kohana_Exception $e)
 		{
@@ -774,20 +780,25 @@ class Kohana_ORM_MPTT extends ORM {
 	 * @access  protected
 	 * @param   int    start position
 	 * @param   int    size of the gap to add [optional]
+   * @param   int    scope to modify [optional]
 	 * @return  void
 	 */
-	protected function create_space($start, $size = 2)
+	protected function create_space($start, $size = 2, $scope = NULL)
 	{
+    if (is_null($scope))
+    {
+      $scope = $this->scope();
+    }
 		DB::update($this->_table_name)
 			->set(array($this->left_column => DB::expr($this->left_column.' + '.$size)))
 			->where($this->left_column,'>=', $start)
-			->where($this->scope_column, '=', $this->scope())
+			->where($this->scope_column, '=', $scope)
 			->execute($this->_db);
 
 		DB::update($this->_table_name)
 			->set(array($this->right_column => DB::expr($this->right_column.' + '.$size)))
 			->where($this->right_column,'>=', $start)
-			->where($this->scope_column, '=', $this->scope())
+			->where($this->scope_column, '=', $scope)
 			->execute($this->_db);
 	}
 
@@ -797,20 +808,25 @@ class Kohana_ORM_MPTT extends ORM {
 	 * @access  protected
 	 * @param   int    start position
 	 * @param   int    size of the gap to remove [optional]
+   * @param   int    scope to modify [optional]
 	 * @return  void
 	 */
-	protected function delete_space($start, $size = 2)
+	protected function delete_space($start, $size = 2, $scope = NULL)
 	{
+    if (is_null($scope))
+    {
+      $scope = $this->scope();
+    }
 		DB::update($this->_table_name)
 			->set(array($this->left_column => DB::expr($this->left_column.' - '.$size)))
 			->where($this->left_column, '>=', $start)
-			->where($this->scope_column, '=', $this->scope())
+			->where($this->scope_column, '=', $scope)
 			->execute($this->_db);
 
 		DB::update($this->_table_name)
 			->set(array($this->right_column => DB::expr($this->right_column.' - '.$size)))
 			->where($this->right_column,'>=', $start)
-			->where($this->scope_column, '=', $this->scope())
+			->where($this->scope_column, '=', $scope)
 			->execute($this->_db);
 	}
 

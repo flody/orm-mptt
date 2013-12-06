@@ -631,7 +631,7 @@ class ORM_MPTT_Test extends Unittest_Database_TestCase {
 		$roots = ORM::factory('test_orm_mptt')->roots;
 		$roots = $roots->as_array();
 		
-		$this->assertEquals(1, sizeof($roots));
+		$this->assertEquals(2, sizeof($roots));
 		$this->assertEquals(1, $roots[0]->left());
 		$this->assertEquals(10, $roots[0]->right());
 	}
@@ -658,6 +658,34 @@ class ORM_MPTT_Test extends Unittest_Database_TestCase {
 
 		// Ensure the second child has ID = 3
 		$this->assertEquals(3, $children[1]->id);
+	}
+
+  /**
+	 * Tests moving a node to last child with scope change
+	 *
+	 * @test
+	 * @covers ORM_MPTT::move_to_last_child
+	 */
+	public function test_move_to_last_child_new_scope()
+	{
+		$node_2 = ORM::factory('Test_ORM_MPTT', 2);
+		$node_6 = ORM::factory('Test_ORM_MPTT', 6);
+		
+		$node_2->move_to_last_child($node_6);
+		$node_6->reload();
+
+		// Make sure the parent_id was set correctly
+		$this->assertEquals(6, $node_2->parent_id, 'Parent ID of child node');
+		
+    // Make sure the level was set correctly
+    $this->assertEquals(2, $node_2->lvl, 'Child node level');
+    $this->assertEquals(1, $node_6->lvl, 'Parent node level');
+		
+		// Make sure the space was adjusted correctly
+		$this->assertEquals(2, $node_2->lft, 'Left of child node');
+		$this->assertEquals(3, $node_2->rgt, 'Right of child node');
+		$this->assertEquals(1, $node_6->lft, 'Left of parent node');
+		$this->assertEquals(4, $node_6->rgt, 'Right of parent node');
 	}
 
 }
