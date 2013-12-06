@@ -1,8 +1,8 @@
-## This forks aims to make MPTT work with Kohana 3.3
+## Modified Preorder Traversal Tree for Kohana 3.3 ORM
 
-So far we've only fixed filename for PSR-0, so usage is the same than before
+A port of Banks' Sprig_MPTT plus some code from BIakaVeron's ORM_MPTT module.
 
-## MPTT Library, extends ORM
+[ISC License](http://www.opensource.org/licenses/isc-license.txt)
 
 ### Setup
 
@@ -29,5 +29,12 @@ Place module in /modules/ and include the call in your bootstrap.
 	$cat->clear(); // Clearing ORM object
 	$cat->name = 'Terminology';
 	$cat->insert_as_last_child($c1);
-
+ 
+### Authors 
+ * Mathew Davies
+ * Kiall Mac Innes
+ * Paul Banks
+ * Brotkin Ivan
+ * Brandon Summers
+ * Alexander Yakovlev
 

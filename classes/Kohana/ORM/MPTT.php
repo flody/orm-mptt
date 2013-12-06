@@ -2,14 +2,9 @@
 
 /**
  * Modified Preorder Tree Traversal Class.
+ * @group orm_mptt
  * 
- * A port of Banks' Sprig_MPTT plus some code from BIakaVeron's ORM_MPTT module.
- *
- * @author Mathew Davies
- * @author Kiall Mac Innes
- * @author Paul Banks
- * @author Brotkin Ivan
- * @author Brandon Summers
+ * @package    ORM_MPTT
  */
 
 class Kohana_ORM_MPTT extends ORM {
@@ -445,7 +440,16 @@ class Kohana_ORM_MPTT extends ORM {
 		$target = $this->parent_from($target, $this->parent_column);
 		return $this->move($target, FALSE, 1, 0, FALSE);
 	}
-	
+
+ 	/**
+	 * This function moves this node under target parent or beside target sibling.
+   * @param ORM_MPTT  target model
+   * @param boolean   move to the left or right side of target
+   * @param int       offset for left
+   * @param int       offset for level
+   * @param boolean   allow to move under a root node
+   * @return ORM_MPTT
+ 	 **/
 	protected function move($target, $left_column, $left_offset, $level_offset, $allow_root_target)
 	{
 		if ( ! $this->loaded())
@@ -818,13 +822,13 @@ class Kohana_ORM_MPTT extends ORM {
 	 */
 	protected function lock()
 	{
-            //3.1 function
-            //$this->_db->query(NULL, 'LOCK TABLE '.$this->_db->quote_table($this->_table_name).' WRITE', TRUE);
-            //3.2 fix
-            $query = 'LOCK TABLES ';
-            $query .= $this->_db->quote_table($this->_table_name) . ' WRITE';
-            $query .= ', ' . $this->_db->quote_table($this->_table_name). ' AS ' . $this->_db->quote_table($this->_object_name) . ' WRITE';
-            $this->_db->query(NULL, $query, TRUE);
+    $query = 'LOCK TABLES ';
+    $query .= $this->_db->quote_table($this->_table_name) . ' WRITE';
+    if ($this->_table_name != $this->_object_name)
+    {
+      $query .= ', ' . $this->_db->quote_table($this->_table_name). ' AS ' . $this->_db->quote_table($this->_object_name) . ' WRITE';
+    }
+    $this->_db->query(NULL, $query, TRUE);
 	}
 
 	/**
