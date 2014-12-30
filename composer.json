@@ -1,0 +1,39 @@
+{
+    "name": "seyfer/kohana-orm-mptt",
+    "version": "3.3",
+    "description": "Kohana 3.3 module - Modified Preorder Tree Traversal library for Kohana ORM",
+    "type": "kohana-module",
+    "authors": [
+        {
+            "name": "seyfer",
+            "email": "seyferseed@mail.ru",
+            "homepage": "http://seyferseed.ru",
+            "role": "Developer"
+        },
+        {
+            "name": "flody",
+            "role": "Developer"
+        },
+        {
+            "name": "evopix",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.4",
+        "composer/installers": "1.*"
+    },
+    "autoload": {
+        "classmap": [
+            "classes/"
+        ]
+    },
+    "extra": {
+        "installer-paths": {
+            "vendor/kohana/modules/{$name}/": [
+                "type:kohana-module"
+            ]
+        }
+    }
+
+}
