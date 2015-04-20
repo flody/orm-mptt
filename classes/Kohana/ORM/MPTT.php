@@ -2,14 +2,9 @@
 
 /**
  * Modified Preorder Tree Traversal Class.
+ * @group orm_mptt
  * 
- * A port of Banks' Sprig_MPTT plus some code from BIakaVeron's ORM_MPTT module.
- *
- * @author Mathew Davies
- * @author Kiall Mac Innes
- * @author Paul Banks
- * @author Brotkin Ivan
- * @author Brandon Summers
+ * @package    ORM_MPTT
  */
 
 class Kohana_ORM_MPTT extends ORM {
@@ -445,7 +440,16 @@ class Kohana_ORM_MPTT extends ORM {
 		$target = $this->parent_from($target, $this->parent_column);
 		return $this->move($target, FALSE, 1, 0, FALSE);
 	}
-	
+
+ 	/**
+	 * This function moves this node under target parent or beside target sibling.
+   * @param ORM_MPTT  target model
+   * @param boolean   move to the left or right side of target
+   * @param int       offset for left
+   * @param int       offset for level
+   * @param boolean   allow to move under a root node
+   * @return ORM_MPTT
+ 	 **/
 	protected function move($target, $left_column, $left_offset, $level_offset, $allow_root_target)
 	{
 		if ( ! $this->loaded())
@@ -498,9 +502,12 @@ class Kohana_ORM_MPTT extends ORM {
 			$level_offset = $target->level() - $this->level() + $level_offset;
 			$size = $this->size();
 
-			$this->create_space($left_offset, $size);
+			$this->create_space($left_offset, $size, $target->scope);
 
-			$this->reload();
+			if ($target->scope == $this->scope)
+      {
+        $this->reload();
+      }
 
 			$offset = ($left_offset - $this->left());
 			
@@ -513,7 +520,10 @@ class Kohana_ORM_MPTT extends ORM {
 				. $this->right_column.'` <= '.$this->right().' AND `'
 				. $this->scope_column.'` = '.$this->scope(), TRUE);
 			
-			$this->delete_space($this->left(), $size);
+			if ($target->scope == $this->scope)
+      {
+  			$this->delete_space($this->left(), $size, $target->scope);
+      }
 		}
 		catch (Kohana_Exception $e)
 		{
@@ -770,20 +780,25 @@ class Kohana_ORM_MPTT extends ORM {
 	 * @access  protected
 	 * @param   int    start position
 	 * @param   int    size of the gap to add [optional]
+   * @param   int    scope to modify [optional]
 	 * @return  void
 	 */
-	protected function create_space($start, $size = 2)
+	protected function create_space($start, $size = 2, $scope = NULL)
 	{
+    if (is_null($scope))
+    {
+      $scope = $this->scope();
+    }
 		DB::update($this->_table_name)
 			->set(array($this->left_column => DB::expr($this->left_column.' + '.$size)))
 			->where($this->left_column,'>=', $start)
-			->where($this->scope_column, '=', $this->scope())
+			->where($this->scope_column, '=', $scope)
 			->execute($this->_db);
 
 		DB::update($this->_table_name)
 			->set(array($this->right_column => DB::expr($this->right_column.' + '.$size)))
 			->where($this->right_column,'>=', $start)
-			->where($this->scope_column, '=', $this->scope())
+			->where($this->scope_column, '=', $scope)
 			->execute($this->_db);
 	}
 
@@ -793,20 +808,25 @@ class Kohana_ORM_MPTT extends ORM {
 	 * @access  protected
 	 * @param   int    start position
 	 * @param   int    size of the gap to remove [optional]
+   * @param   int    scope to modify [optional]
 	 * @return  void
 	 */
-	protected function delete_space($start, $size = 2)
+	protected function delete_space($start, $size = 2, $scope = NULL)
 	{
+    if (is_null($scope))
+    {
+      $scope = $this->scope();
+    }
 		DB::update($this->_table_name)
 			->set(array($this->left_column => DB::expr($this->left_column.' - '.$size)))
 			->where($this->left_column, '>=', $start)
-			->where($this->scope_column, '=', $this->scope())
+			->where($this->scope_column, '=', $scope)
 			->execute($this->_db);
 
 		DB::update($this->_table_name)
 			->set(array($this->right_column => DB::expr($this->right_column.' - '.$size)))
 			->where($this->right_column,'>=', $start)
-			->where($this->scope_column, '=', $this->scope())
+			->where($this->scope_column, '=', $scope)
 			->execute($this->_db);
 	}
 
@@ -818,13 +838,13 @@ class Kohana_ORM_MPTT extends ORM {
 	 */
 	protected function lock()
 	{
-            //3.1 function
-            //$this->_db->query(NULL, 'LOCK TABLE '.$this->_db->quote_table($this->_table_name).' WRITE', TRUE);
-            //3.2 fix
-            $query = 'LOCK TABLES ';
-            $query .= $this->_db->quote_table($this->_table_name) . ' WRITE';
-            $query .= ', ' . $this->_db->quote_table($this->_table_name). ' AS ' . $this->_db->quote_table($this->_object_name) . ' WRITE';
-            $this->_db->query(NULL, $query, TRUE);
+    $query = 'LOCK TABLES ';
+    $query .= $this->_db->quote_table($this->_table_name) . ' WRITE';
+    if ($this->_table_name != $this->_object_name)
+    {
+      $query .= ', ' . $this->_db->quote_table($this->_table_name). ' AS ' . $this->_db->quote_table($this->_object_name) . ' WRITE';
+    }
+    $this->_db->query(NULL, $query, TRUE);
 	}
 
 	/**
